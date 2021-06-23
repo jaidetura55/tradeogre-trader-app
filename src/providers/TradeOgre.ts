@@ -48,15 +48,25 @@ class TradeOgre {
     return formatedBody;
   }
 
-  public async getAssetPrice(code: string) {
-    const { data } = await this.public_client.get<Array<IAsset>>(`markets`)
+  public async getAssetInfo(code: string) {
+    const { data } = await this.public_client.get<Array<IAsset>>(`markets`);
 
-    const asset = data.find(market => Object.keys(market)[0] === code)
+    const btc = data.find(market => Object.keys(market)[0] === 'USDT-BTC');
 
-    if (!asset) 
-      throw new Error(`Wrong asset code provided!`)
+    const asset = data.find(market => Object.keys(market)[0] === code);
 
-    return asset[code].price
+    if (!asset || !btc) 
+      throw new Error(`Wrong asset code provided!`);
+
+    const asset_data = asset[code];
+
+    const btc_data = btc['USDT-BTC'];
+
+    Object.assign(asset_data, {
+      usd_price: (btc_data.price * asset_data.price).toFixed(8),
+    });
+
+    return asset_data;
   }
 
   public async getOrders() {
@@ -92,7 +102,7 @@ class TradeOgre {
     market,
     quantity,
   }: Omit<ICreateSellOrderDTO, `price`>) { 
-    const price = await this.getAssetPrice(market)
+    const { price } = await this.getAssetInfo(market)
 
     const { data } = await this.private_client.post('/order/sell', this.formatBody({
       market,
