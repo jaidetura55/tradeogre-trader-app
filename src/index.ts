@@ -1,11 +1,21 @@
-import TradeOgre from "./modules/TradeOgre";
+import App from "./App";
 
-(async () => {
-  const tradeOgre = new TradeOgre();
+const app = new App();
 
-  const balances = await tradeOgre.getBalances();
+const asset_code = String(process.env.ASSET_CODE);
+const price = Number(process.env.ASSET_PRICE);
+const quantity = Number(process.env.ASSET_QUANTITY);
 
-  console.log(balances);
+console.info(
+  `Starting app with parans: 
+    asset ${asset_code}, 
+    price ${price}, 
+    quantity ${quantity}
+  `
+);
 
-  // To do!
-})()
+app.sellOrder({
+  asset_code,
+  price,
+  quantity,
+});
