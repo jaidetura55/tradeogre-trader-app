@@ -1,4 +1,5 @@
 import TradeOgre from "./providers/TradeOgre";
+import { format } from 'date-fns';
 
 interface IRequest {
   price: number;
@@ -22,7 +23,7 @@ class App {
     quantity,
     price,
   }: IRequest) {
-    console.info(`Application initialized to sellOrder 🚀`);
+    console.info(`Method sellOrder initialized 🚀\n`);
 
     const target_price = price;
   
@@ -33,10 +34,12 @@ class App {
     while (is_price_bellow_target) {
       asset_current_price = Number((await this.exchange.getAssetInfo(asset_code)).usd_price);
   
-      console.info(`📈 ${asset_code} current price: ${asset_current_price}`);
+      console.info(
+        `📈 ${asset_code} current price: ${asset_current_price}, time: ${format(new Date(), 'HH:mm')}\n`
+      );
   
       if (asset_current_price >= target_price) {
-        console.info(`💸 Selling ${quantity} ${asset_code} with the price: ${asset_current_price}`);
+        console.info(`💸 Selling ${quantity} ${asset_code} with the price: ${asset_current_price}\n`);
   
         const result = await this.exchange.createImmediateSellOrder({
           market: asset_code,
@@ -48,7 +51,7 @@ class App {
         return process.exit();
       }
   
-      console.info(`⌛ awaiting for new prices...`)
+      console.info(`⌛ awaiting for new prices...\n`)
   
       await this.timer();
     }
