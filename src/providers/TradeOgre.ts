@@ -9,7 +9,8 @@ interface IBalances {
 
 interface IAsset {
   [key: string]: {
-    price: number
+    price: number;
+    usd_price: string;
   }
 }
 
