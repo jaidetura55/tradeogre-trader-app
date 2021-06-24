@@ -48,7 +48,50 @@ class App {
     
         console.info(result);
     
-        return process.exit();
+        is_price_bellow_target = false;
+
+        return;
+      }
+  
+      console.info(`⌛ awaiting for new prices...\n`)
+  
+      await this.timer();
+    }
+  }
+
+  public async buyOrder({
+    asset_code,
+    quantity,
+    price,
+  }: IRequest) {
+    console.info(`Method buyOrder initialized 🚀\n`);
+
+    const target_price = price;
+  
+    let is_price_above_target = true;
+  
+    let asset_current_price: number;
+  
+    while (is_price_above_target) {
+      asset_current_price = Number((await this.exchange.getAssetInfo(asset_code)).usd_price);
+  
+      console.info(
+        `📈 ${asset_code} current price: ${asset_current_price}, time: ${format(new Date(), 'HH:mm')}\n`
+      );
+  
+      if (asset_current_price <= target_price) {
+        console.info(`💸 Buying ${quantity} ${asset_code} with the price: ${asset_current_price}\n`);
+  
+        const result = await this.exchange.createImmediateBuyOrder({
+          market: asset_code,
+          quantity,
+        })  
+    
+        console.info(result);
+    
+        is_price_above_target = false;
+
+        return;
       }
   
       console.info(`⌛ awaiting for new prices...\n`)
