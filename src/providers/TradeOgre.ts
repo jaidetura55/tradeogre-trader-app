@@ -113,6 +113,21 @@ class TradeOgre {
 
     return data;
   }
+
+  public async createImmediateBuyOrder({
+    market,
+    quantity,
+  }: Omit<ICreateSellOrderDTO, `price`>) { 
+    const { price } = await this.getAssetInfo(market)
+
+    const { data } = await this.private_client.post('/order/buy', this.formatBody({
+      market,
+      quantity,
+      price,
+    }));
+
+    return data;
+  }
 }
 
 export default TradeOgre;
