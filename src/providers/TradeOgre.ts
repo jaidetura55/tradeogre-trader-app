@@ -7,23 +7,33 @@ interface IBalances {
   }
 }
 
-interface IAsset {
-  [key: string]: {
-    price: number;
-    usd_price: string;
-  }
+interface IAssetData {
+  initialprice: string;
+  price: string;
+  high: string;
+  low: string;
 }
 
-interface ICreateSellOrderDTO {
+interface IMarketsResponse {
+  [key: string]: IAssetData
+}
+
+interface IGetAssetInfoResponse extends IAssetData {
+  usd_price: string;
+}
+
+interface ICreateOrderDTO {
   market: string; 
   quantity: number; 
-  price: number;
+  price: string;
 }
 
 class TradeOgre {
   private public_client: AxiosInstance;
 
   private private_client: AxiosInstance;
+
+  private btc_code = 'USDT-BTC';
 
   constructor() {
     this.public_client = axios.create({
@@ -49,33 +59,76 @@ class TradeOgre {
     return formatedBody;
   }
 
-  public async getAssetInfo(code: string) {
-    const { data } = await this.public_client.get<Array<IAsset>>(`markets`);
+  private formatNumber(value: number) {
+    return value.toFixed(8)
+  }
 
-    const btc = data.find(market => Object.keys(market)[0] === 'USDT-BTC');
+  private async getBTCFoundsBeforeBuyOrder(value: number) {
+    const balance = await this.getBalances();
+
+    const btc = balance.find(({ market }) => 'BTC');
+
+    if (!btc || +btc.balance < value) {
+      const amount_to_buy = value - Number(btc?.balance || 0);
+
+      const { price } = await this.getAssetInfo(this.btc_code);
+
+      return this.private_client.post('/order/buy', this.formatBody({
+        market: this.btc_code,
+        quantity: amount_to_buy,
+        price,
+      }));
+    }
+  }
+
+  /**
+   * @param code can be any altcoin in pair with BTC or USDT-BTC
+   * @example tradeOgre.getAssetInfo('BTC-XMR');
+   * @example tradeOgre.getAssetInfo('USDT-BTC');
+   */
+  public async getAssetInfo(code: string): Promise<IGetAssetInfoResponse> {
+    const { data } = await this.public_client.get<Array<IMarketsResponse>>(`markets`);
+
+    const btc = data.find(market => Object.keys(market)[0] === this.btc_code);
+
+    if (!btc) throw new Error(`Tradeogre API error!`);
+
+    if (code === this.btc_code) 
+      return {
+        ...btc[this.btc_code], 
+        usd_price: btc[this.btc_code].price
+      }
 
     const asset = data.find(market => Object.keys(market)[0] === code);
 
-    if (!asset || !btc) 
-      throw new Error(`Wrong asset code provided!`);
+    if (!asset) throw new Error(`Wrong asset code provided!`);
 
     const asset_data = asset[code];
 
-    const btc_data = btc['USDT-BTC'];
+    const { price } = btc[this.btc_code];
 
-    Object.assign(asset_data, {
-      usd_price: (btc_data.price * asset_data.price).toFixed(8),
-    });
+    const response = {
+      ...asset_data, 
+      usd_price: this.formatNumber(+price * +asset_data.price)
+    };
 
-    return asset_data;
+    return response;
   }
 
+  /**
+   * 
+   * @returns all scheduled order
+   */
   public async getOrders() {
     const { data } = await this.private_client.post('/account/orders');
   
     return data;
   }
 
+  /**
+   * 
+   * @returns all asset that you got 
+   */
   public async getBalances() {
     const { data: { balances } } = await this.private_client.get<IBalances>(
       '/account/balances'
@@ -93,16 +146,25 @@ class TradeOgre {
     }));
   }
 
-  public async createSellOrder(dto: ICreateSellOrderDTO) { 
+  public async createSellOrder(dto: ICreateOrderDTO) { 
     const { data } = await this.private_client.post('/order/sell', this.formatBody(dto));
 
     return data;
   }
 
+  public async createBuyOrder(dto: ICreateOrderDTO) { 
+    const { data } = await this.private_client.post('/order/buy', this.formatBody(dto));
+
+    return data;
+  }
+
+  /**
+   * Create an order with the current price provided by the tradeogre API
+   */
   public async createImmediateSellOrder({
     market,
     quantity,
-  }: Omit<ICreateSellOrderDTO, `price`>) { 
+  }: Omit<ICreateOrderDTO, `price`>) { 
     const { price } = await this.getAssetInfo(market)
 
     const { data } = await this.private_client.post('/order/sell', this.formatBody({
@@ -114,11 +176,17 @@ class TradeOgre {
     return data;
   }
 
+  /**
+   * Create an order with the current price provided by the tradeogre API
+   * Each tradeogre coin is exchanged using BTC, so if there is no BTC enough, this method will buy the amount needed to finish the order
+   */
   public async createImmediateBuyOrder({
     market,
     quantity,
-  }: Omit<ICreateSellOrderDTO, `price`>) { 
-    const { price } = await this.getAssetInfo(market)
+  }: Omit<ICreateOrderDTO, `price`>) { 
+    const { price } = await this.getAssetInfo(market);
+
+    await this.getBTCFoundsBeforeBuyOrder(+price * quantity);
 
     const { data } = await this.private_client.post('/order/buy', this.formatBody({
       market,
