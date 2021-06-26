@@ -1,4 +1,4 @@
-export default interface ICryptoCoin {
+export interface ICryptoCoin {
   id: number;
   name: string;
   symbol: string;
