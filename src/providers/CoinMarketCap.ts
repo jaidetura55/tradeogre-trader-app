@@ -1,10 +1,10 @@
 import axios, { AxiosInstance } from "axios";
 import coinmarketcap from "../configs/coinmarketcap";
-import CryptoCoin from "../definitions/ICryptoCoin";
+import { ICryptoCoin } from "../models/ICryptoCoin";
 
 interface ICryptocurrencyReturn {
   status: string;
-  data: Array<CryptoCoin>;
+  data: Array<ICryptoCoin>;
 }
 
 class CoinMarketCap {
