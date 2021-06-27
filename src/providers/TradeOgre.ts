@@ -63,12 +63,22 @@ class TradeOgre {
     return value.toFixed(8)
   }
 
-  private async getBTCFoundsBeforeBuyOrder(value: number) {
+  private async sellBTCFounds(amount: number) {
+    const { price } = await this.getAssetInfo(this.btc_code);
+
+    return this.private_client.post('/order/sell', this.formatBody({
+      market: this.btc_code,
+      quantity: amount,
+      price,
+    }));
+  }
+
+  private async getBTCFounds(value: number) {
     const balance = await this.getBalances();
 
     const btc = balance.find(({ market }) => market === 'BTC');
 
-    if (!btc || +btc.balance < value) {
+    if (!btc || + btc.balance < value) {
       const amount_to_buy = value - Number(btc?.balance || 0);
 
       const { price } = await this.getAssetInfo(this.btc_code);
@@ -115,7 +125,6 @@ class TradeOgre {
   }
 
   /**
-   * 
    * @returns all scheduled order
    */
   public async getOrders() {
@@ -125,7 +134,6 @@ class TradeOgre {
   }
 
   /**
-   * 
    * @returns all asset that you got 
    */
   public async getBalances() {
@@ -165,13 +173,17 @@ class TradeOgre {
     market,
     quantity,
   }: Omit<ICreateOrderDTO, `price`>) { 
-    const { price } = await this.getAssetInfo(market)
+    const { btc_price } = await this.getAssetInfo(market)
 
     const { data } = await this.private_client.post('/order/sell', this.formatBody({
       market,
       quantity,
-      price,
+      price: btc_price,
     }));
+
+    if (market !== this.btc_code) {
+      await this.sellBTCFounds(+ btc_price * quantity);
+    }
 
     return data;
   }
@@ -185,16 +197,16 @@ class TradeOgre {
     market,
     quantity,
   }: Omit<ICreateOrderDTO, `price`>) { 
-    const { price } = await this.getAssetInfo(market);
+    const { btc_price } = await this.getAssetInfo(market);
 
-    const result = await this.getBTCFoundsBeforeBuyOrder(+price * quantity);
+    const result = await this.getBTCFounds(+btc_price * quantity);
 
     if (market === this.btc_code) return result;
 
     const { data } = await this.private_client.post('/order/buy', this.formatBody({
       market,
       quantity,
-      price,
+      price: btc_price,
     }));
 
     return data;
