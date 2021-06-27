@@ -12,7 +12,7 @@ export const requestOperationData = () => {
   if (op_choosed === -1) {
     console.info(`⏳ Closing application...`)
 
-    process.exit(1);
+    process.exit();
   }
 
   const market = readlineSync.question(
