@@ -1,5 +1,6 @@
 import TradeOgre from "./providers/TradeOgre";
 import { format } from 'date-fns';
+import { greenText } from "./logger/styles";
 
 interface IRequest {
   asset_code: string;
@@ -23,7 +24,7 @@ class App {
     quantity,
     price,
   }: IRequest) {
-    console.info(`Method sellOrder initialized 🚀\n`);
+    console.info(greenText(`Method sell order initialized 🚀\nPrice: ${price} - Quantity: ${quantity} - Market: ${asset_code}`));
 
     const target_price = price;
   
@@ -64,7 +65,8 @@ class App {
     quantity,
     price,
   }: IRequest) {
-    console.info(`Method buyOrder initialized 🚀\n`);
+    console.info(greenText(`Method buy order initialized 🚀\nPrice: ${price} - Quantity: ${quantity} - Market: ${asset_code}`));
+
 
     const target_price = price;
   
