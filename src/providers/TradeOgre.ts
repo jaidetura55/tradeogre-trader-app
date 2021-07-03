@@ -1,24 +1,12 @@
 import axios, { AxiosInstance } from 'axios'
 import tradeogre from '../configs/tradeogre';
+import { ITOCrypto } from '../models/ITOCrypto';
 
 interface IBalances {
-  balances: {
-    [key: string]: string;
-  }
+  balances: Record<string, string>
 }
 
-interface IAssetData {
-  initialprice: string;
-  price: string;
-  high: string;
-  low: string;
-}
-
-interface IMarketsResponse {
-  [key: string]: IAssetData;
-}
-
-interface IAssetInfoResponse extends IAssetData {
+interface IAssetInfoResponse extends ITOCrypto {
   btc_price: string;
 }
 
@@ -97,7 +85,7 @@ class TradeOgre {
    * @example tradeOgre.getAssetInfo('USDT-BTC');
    */
   public async getAssetInfo(market_code: string): Promise<IAssetInfoResponse> {
-    const { data } = await this.public_client.get<Array<IMarketsResponse>>(`markets`);
+    const { data } = await this.public_client.get<Array<Record<string,ITOCrypto>>>(`markets`);
 
     const btc = data.find(market => Object.keys(market)[0] === this.btc_code);
 
