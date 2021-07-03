@@ -17,11 +17,7 @@ can't left your money safe using an stable coin.
 - Performing altcoins orders using your USDT amount.
 - Scheduling orders of altcoin sale and convert the amount to USDT.
 
-  <div>
-    <img src="https://github.com/robertokbr/tradeogre-trader-app/blob/master/.Github/schedule.gif" />
-  </div>
-
-### To do
-- Implement pump and dump function
-- Implement multiple orders in the same process
-
+### TO-DO
+ - API to receive orders through REST requests
+ - Database to provide data to the order performeds endpoint
+ - Socket to see in real time the status of some order
