@@ -3,10 +3,7 @@ import coinmarketcap from "../configs/coinmarketcap";
 import AppError from "../error/AppError";
 import { ICMCCrypto } from "../models/ICMCCrypto";
 
-type IDateRange = 
-`percent_change_24h`
-| `percent_change_7d`
-| `percent_change_30d`
+type IDateRange = `percent_change_24h` | `percent_change_7d` | `percent_change_30d`
 
 interface ICryptocurrencyReturn {
   status: string;
