@@ -4,11 +4,13 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "app:run": "ts-node-dev -r dotenv/config --transpile-only ./src/index.ts",
+    "dev:server": "ts-node-dev -r dotenv/config --transpile-only ./src/infra/http/server.ts",
     "app:test": "ts-node-dev -r dotenv/config --transpile-only ./src/__test/index.ts"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.10",
     "@types/date-fns": "^2.6.0",
+    "@types/express": "^4.17.12",
     "@types/node": "^15.12.4",
     "@types/readline-sync": "^1.4.3",
     "dotenv": "^10.0.0",
@@ -17,8 +19,9 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
-    "chalk": "^4.1.1",
+    "cors": "^2.8.5",
     "date-fns": "^2.22.1",
-    "readline-sync": "^1.4.10"
+    "express": "^4.17.1",
+    "express-async-errors": "^3.1.1"
   }
 }
