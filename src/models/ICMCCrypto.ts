@@ -1,4 +1,4 @@
-export interface ICryptoCoin {
+export interface ICMCCrypto {
   id: number;
   name: string;
   symbol: string;
